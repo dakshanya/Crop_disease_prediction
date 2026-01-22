@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Crop Disease Prediction</h1>
+            <p>Detect crop diseases instantly using AI. Upload an image of your leaf and get accurate results.</p>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="about">
+        <div class="container">
+            <h2>About Us</h2>
+            <p>
+                We are committed to helping farmers and agricultural enthusiasts detect crop diseases quickly. 
+                Using advanced AI models, our system can identify multiple crop diseases and provide accurate predictions 
+                to reduce crop loss and improve yield.
+            </p>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <h3>1. Upload Leaf Image</h3>
+                    <p>Take a clear photo of the crop leaf you want to check and upload it to our system.</p>
+                </div>
+                <div class="step">
+                    <h3>2. AI Analysis</h3>
+                    <p>Our AI model analyzes the leaf image to detect any disease present accurately.</p>
+                </div>
+                <div class="step">
+                    <h3>3. Get Results</h3>
+                    <p>View the prediction result along with confidence levels instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Section -->
+    <section class="prediction">
+        <div class="container">
+            <h2>Check Your Crop</h2>
+            <div class="upload-card">
+                <form id="predictForm">
+                    <input type="file" id="fileInput" name="file" accept="image/*" required>
+                    <button type="submit" class="btn-gradient">Predict</button>
+                </form>
+
+                <div id="result" class="result-card hidden">
+    <img id="previewImage" src="" alt="Uploaded Leaf" class="preview-img">
+
+    <h3 id="prediction"></h3>
+    <p id="confidence"></p>
+
+    <div class="recommendation-box">
+        <h4>Cause</h4>
+        <p id="cause"></p>
+
+        <h4>Recommendations</h4>
+        <ul id="solution"></ul>
+    </div>
+</div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2026 Crop Disease AI </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Prediction -->
+    <script>
+        const form = document.getElementById('predictForm');
+        const fileInput = document.getElementById('fileInput');
+        const resultDiv = document.getElementById('result');
+        const predictionText = document.getElementById('prediction');
+        const confidenceText = document.getElementById('confidence');
+        const previewImage = document.getElementById('previewImage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                previewImage.src = "data:image/png;base64," + data.image;
+                predictionText.textContent =
+    "Prediction: " + data.prediction.replaceAll('__', ' ');
+
+confidenceText.textContent =
+    "Confidence: " + data.confidence + "%";
+
+document.getElementById('cause').textContent =
+    data.recommendation.cause;
+
+const solutionList = document.getElementById('solution');
+solutionList.innerHTML = "";
+
+data.recommendation.solution.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    solutionList.appendChild(li);
+});
+
+resultDiv.classList.remove('hidden');
+
+            } else {
+                const error = await response.json();
+                alert(error.error);
+            }
+        });
+    </script>
+</body>
+</html>
